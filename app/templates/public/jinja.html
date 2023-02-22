@@ -1,0 +1,48 @@
+{% extends "public/templates/base.html" %}
+
+{% block title %} Tony {% endblock %}
+
+
+
+{% block content %}
+
+<div class="content">
+    <div class="row">
+        <div class="col">
+
+            <h2>Hello</h2>
+            <hr>
+
+            <h3>Project: {{ project_name }}</h3>
+
+            <h3>Looping</h3>
+            <ul>
+                {% for lang in langs %}
+                <li>{{ lang }}</li>
+                {% endfor %}
+            </ul>
+            <hr>
+
+            <h3>Looping with index</h3>
+            <ul>
+                {% for lang in langs %}
+                <li>{{ loop.index }}: {{ lang }}</li>
+                {% endfor %}
+            </ul>
+            <hr>
+
+            <h3>Looping a dict</h3>
+            <ul>
+                {% for lang in langs %}
+                <li>{{ loop.index }}: {{ lang }}</li>
+                {% endfor %}
+            </ul>
+            <hr>
+
+
+
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
