@@ -5,6 +5,9 @@ from flask import render_template, request, redirect, jsonify, make_response
 
 @app.route("/")
 def index():
+
+    print(f"Flask ENV is set to {app.config['ENV']}")
+
     return render_template("public/index.html")
 
 
@@ -120,6 +123,22 @@ def create_entry():
     res = make_response(jsonify(req), 200)
 
     return res
+
+
+# query strings
+@app.route("/query")
+def query():
+
+    if request.args:
+        args = request.args
+
+        serialized = ", ".join(f"{k}: {v}" for k, v in args.items())
+
+        return f"(Query) {serialized}", 200
+    
+    else:
+
+        return "No query recevied", 200
 
 
 
