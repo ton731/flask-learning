@@ -2,6 +2,10 @@ from app import app
 
 from flask import render_template, request, redirect, jsonify, make_response
 
+import os
+
+from werkzeug.utils import secure_filename
+
 
 @app.route("/")
 def index():
@@ -142,5 +146,54 @@ def query():
 
 
 
+app.config["IMAGE_UPLOADS"] = "app/static/img/uploads"
+app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["PNG", "JPG", "JPEG", "GIF"]
+app.config["MAX_IMAGE_FILESIZE"] = 0.5 * 1024 * 1024
+
+def allowed_image(filename):
+    if "." not in filename:
+        return False
+    
+    extension = filename.split(".")[-1]
+    if extension.upper() in app.config["ALLOWED_IMAGE_EXTENSIONS"]:
+        return True
+    return False
+
+
+def allowed_image_filesize(filesize):
+    if int(filesize) <= app.config["MAX_IMAGE_FILESIZE"]:
+        return True
+    return False
+
+
+# uploading files with flask
+@app.route("/upload-image", methods=["GET", "POST"])
+def upload_image():
+
+    if request.method == "POST":
+        if request.files:
+
+            if not allowed_image_filesize(request.cookies.get("filesize")):
+                print("File exceed maximum size")
+                return redirect(request.url)
+
+            image = request.files["image"]
+
+            if image.filename == "":
+                print("Image must have a filename")
+                return redirect(request.url)
+            
+            if not allowed_image(image.filename):
+                print("That image extensions is not allowed")
+                return redirect(request.url)
+            
+            else:
+                filename = secure_filename(image.filename)
+                image.save(os.path.join(app.config["IMAGE_UPLOADS"], filename))
+                print(f"Image saved: {filename}")
+
+            return redirect(request.url)
+
+    return render_template("public/upload_image.html")
 
 
