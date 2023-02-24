@@ -77,14 +77,14 @@ users = {
 
 
 # dynamic url with one vairable
-@app.route("/profile/<username>")
-def profile(username):
+# @app.route("/profile/<username>")
+# def profile(username):
 
-    user = None
-    if username in users:
-        user = users[username]
+#     user = None
+#     if username in users:
+#         user = users[username]
 
-    return render_template("public/profile.html", username=username, user=user)
+#     return render_template("public/profile.html", username=username, user=user)
 
 
 # dynamic url with multiple variables
@@ -196,4 +196,117 @@ def upload_image():
 
     return render_template("public/upload_image.html")
 
+
+
+
+# sending files
+from flask import send_from_directory, abort
+
+# app.config["CLIENT_IMAGES"] = "app/static/client/img"
+app.config["CLIENT_IMAGES"] = "/Users/tony/Desktop/flask-learning/app/static/client/img"
+
+@app.route("/get-image/<image_name>")
+def get_image(image_name):
+    try:
+        return send_from_directory(
+            app.config["CLIENT_IMAGES"], 
+            path=image_name,
+            as_attachment=False)
+    
+    except FileNotFoundError:
+        abort(404)
+
+
+# flask cookies
+@app.route("/cookies")
+def cookies():
+
+    res = make_response("Cookies", 200)
+
+    res.set_cookie("flavor", 
+                   value="chocolate chip",
+                   max_age=10,
+                   expires=None,
+                   path=request.path,
+                   domain=None,
+                   secure=False,
+                   httponly=False,
+                   samesite=False)
+
+
+    cookies = request.cookies
+    flavor = cookies.get("flavor")
+    print("cookie flavor:", flavor)
+
+    return res
+
+
+
+# Flask session object
+from flask import session, url_for
+
+app.config["SECRET_KEY"] = "sdglishgqithqo-rrqhia"
+
+#  a mock database
+users = {
+    "tony": {
+    "username": "tony",
+    "email": "tony@gmail.com",
+    "password": "tony123",
+    "bio": "civil engeering"
+    },
+    "ivy": {
+    "username": "ivy",
+    "email": "ivy@gmail.com",
+    "password": "ivy123",
+    "bio": "anthorpology"
+    }
+}
+
+@app.route("/sign-in", methods=["GET", "POST"])
+def sign_in():
+
+    if request.method == "POST":
+
+        req = request.form
+
+        username = req.get("username")
+        password = req.get("password")
+
+        # this is purely to demonstrate session object
+        # don't use these in real production, it's not safe
+
+        if username not in users:
+            print("username not found")
+            return redirect(request.url)
+        else:
+            user = users[username]
+
+        if not password == user["password"]:
+            print("Password incorrect")
+            return redirect(request.url)
+        else:
+            session["USERNAME"] = user["username"]
+            print("User added to session")
+            return redirect(url_for("profile"))
+
+    return render_template("public/sign_in.html")
+
+
+@app.route("/profile/")
+def profile():
+
+    if session.get("USERNAME", None) is not None:
+        username = session.get("USERNAME")
+        user = users[username]
+        return render_template("public/profile.html", username=username, user=user)
+    else:
+        print("Username not found in session")
+        return redirect(url_for("sign_in"))
+    
+    
+@app.route("sign-out")
+def sign_out():
+    session.pop("USERNAME", None)
+    return redirect(url_for("sign_in"))
 
