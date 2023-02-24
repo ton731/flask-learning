@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 
 @app.route("/")
 def index():
-
+    
     print(f"Flask ENV is set to {app.config['ENV']}")
 
     return render_template("public/index.html")
@@ -38,20 +38,20 @@ def about():
     return "I'm in about!"
 
 
-@app.route("/sign-up", methods=["GET", "POST"])
-def sign_up():
+# @app.route("/sign-up", methods=["GET", "POST"])
+# def sign_up():
 
-    if request.method == "POST":
-        req = request.form
+#     if request.method == "POST":
+#         req = request.form
         
-        username = req['username']
-        email = req.get('email')
-        password = request.form['password']
-        print(username, email, password)
+#         username = req['username']
+#         email = req.get('email')
+#         password = request.form['password']
+#         print(username, email, password)
 
-        return redirect(request.url)
+#         return redirect(request.url)
 
-    return render_template("public/sign_up.html")
+#     return render_template("public/sign_up.html")
 
 
 
@@ -304,9 +304,35 @@ def profile():
         print("Username not found in session")
         return redirect(url_for("sign_in"))
     
-    
-@app.route("sign-out")
+
+@app.route("/sign-out")
 def sign_out():
     session.pop("USERNAME", None)
     return redirect(url_for("sign_in"))
+
+
+
+# message flashing & notifications
+from flask import flash
+
+@app.route("/sign-up", methods=["GET", "POST"])
+def sign_up():
+
+    if request.method == "POST":
+        req = request.form
+        
+        username = req['username']
+        email = req.get('email')
+        password = request.form['password']
+
+        # check password length
+        if not len(password) >= 10:
+            flash("Password must be at least 10 characters in length", "warning")
+            return redirect(request.url)
+
+        # categories: [success, warning, danger]
+        flash("Account created!", "success")
+        return redirect(request.url)
+
+    return render_template("public/sign_up.html")
 
